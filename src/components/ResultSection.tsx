@@ -20,6 +20,9 @@ const ResultSection: React.FC<ResultSectionProps> = ({ diffResult }) => {
     return '';
   };
 
+  let leftLineCount = 1;
+  let rightLineCount = 1;
+
   return (
     <div className="w-full mt-4">
       <h2 className="text-xl font-bold mb-4">Diff Result</h2>
@@ -46,8 +49,18 @@ const ResultSection: React.FC<ResultSectionProps> = ({ diffResult }) => {
         <div className="overflow-auto max-h-[600px]">
           {diffResult.lines.map((line, index) => (
             <div key={index} className="flex">
-              <RenderDiffLine line={line.left} side="left" getDiffTypeClass={getDiffTypeClass} />
-              <RenderDiffLine line={line.right} side="right" getDiffTypeClass={getDiffTypeClass} />
+              <RenderDiffLine 
+                line={line.left} 
+                side="left" 
+                getDiffTypeClass={getDiffTypeClass}
+                lineNumber={line.left ? leftLineCount++ : null}
+              />
+              <RenderDiffLine 
+                line={line.right} 
+                side="right" 
+                getDiffTypeClass={getDiffTypeClass}
+                lineNumber={line.right ? rightLineCount++ : null}
+              />
             </div>
           ))}
         </div>
@@ -75,30 +88,89 @@ interface RenderDiffLineProps {
   line: DiffLine | null;
   side: 'left' | 'right';
   getDiffTypeClass: (type: DiffType) => string;
+  lineNumber: number | null;
 }
 
-const RenderDiffLine: React.FC<RenderDiffLineProps> = ({ line, side, getDiffTypeClass }) => {
+const RenderDiffLine: React.FC<RenderDiffLineProps> = ({ line, side, getDiffTypeClass, lineNumber }) => {
   const { theme } = useTheme();
   
-  if (!line) {
-    return (
-      <div className={`
-        w-1/2 p-2 border-b font-mono text-sm whitespace-pre-wrap
-        ${side === 'left' ? 'border-r' : ''}
-        ${theme === 'dark' ? 'border-gray-700 bg-gray-800/50' : 'border-gray-200 bg-gray-50'}
-      `}>
-        &nbsp;
-      </div>
-    );
-  }
+  const renderContent = (line: DiffLine) => {
+    if (!line.changes || line.changes.length === 0) {
+      return line.content;
+    }
 
+    const parts: JSX.Element[] = [];
+    let lastEnd = 0;
+
+    line.changes.forEach(({ start, end }, index) => {
+      // Add unchanged text before the change
+      if (start > lastEnd) {
+        parts.push(
+          <span key={`unchanged-${index}-1`}>
+            {line.content.slice(lastEnd, start)}
+          </span>
+        );
+      }
+
+      // Add changed text
+      parts.push(
+        <span
+          key={`changed-${index}`}
+          className={`
+            font-semibold
+            ${theme === 'dark'
+              ? line.type === 'removed'
+                ? 'text-red-400'
+                : line.type === 'modified' // Check if the line type is 'modified'
+                ? 'text-yellow-400'      // Apply yellow for modified text in dark mode
+                : 'text-blue-400'        // Fallback (original blue)
+              : line.type === 'removed'
+                ? 'text-red-600'
+                : line.type === 'modified' // Check if the line type is 'modified'
+                ? 'text-yellow-600'      // Apply yellow for modified text in light mode
+                : 'text-blue-600'        // Fallback (original blue)
+            }
+          `}
+        >
+          {line.content.slice(start, end)}
+        </span>
+      );
+
+      lastEnd = end;
+    });
+
+    // Add any remaining unchanged text
+    if (lastEnd < line.content.length) {
+      parts.push(
+        <span key="unchanged-last">
+          {line.content.slice(lastEnd)}
+        </span>
+      );
+    }
+
+    return <>{parts}</>;
+  };
+  
   return (
     <div className={`
-      w-1/2 p-2 border-b font-mono text-sm whitespace-pre-wrap ${getDiffTypeClass(line.type)}
+      w-1/2 flex
       ${side === 'left' ? 'border-r' : ''}
       ${theme === 'dark' ? 'border-gray-700' : 'border-gray-200'}
     `}>
-      {line.content || '\u00A0'}
+      <div className={`
+        w-12 flex-shrink-0 p-2 text-right font-mono text-sm border-r select-none
+        ${theme === 'dark' ? 'bg-gray-900 text-gray-500' : 'bg-gray-100 text-gray-400'}
+        ${theme === 'dark' ? 'border-gray-700' : 'border-gray-200'}
+      `}>
+        {lineNumber || '\u00A0'}
+      </div>
+      <div className={`
+        flex-1 p-2 font-mono text-sm whitespace-pre-wrap
+        ${line ? getDiffTypeClass(line.type) : ''}
+        ${!line && (theme === 'dark' ? 'bg-gray-800/50' : 'bg-gray-50')}
+      `}>
+        {line ? renderContent(line) : '\u00A0'}
+      </div>
     </div>
   );
 };
