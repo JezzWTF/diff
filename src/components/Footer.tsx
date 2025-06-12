@@ -11,7 +11,7 @@ const Footer: React.FC = () => {
     `}>
       <div className="container mx-auto text-center">
         <p className="text-sm">
-          Diff Checker &copy; {new Date().getFullYear()}
+          Jezz.WTF &copy; {new Date().getFullYear()}
         </p>
       </div>
     </footer>

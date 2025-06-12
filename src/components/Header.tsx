@@ -1,5 +1,5 @@
 import React from 'react';
-import { Sun, Moon, GitCompare as FileCompare } from 'lucide-react';
+import { Sun, Moon, GitCompareArrows as FileCompare } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
 
