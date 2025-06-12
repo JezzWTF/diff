@@ -24,14 +24,17 @@ const Header: React.FC = () => {
         <div className="flex items-center gap-8">
           <div className="flex items-center gap-2">
             <FileCompare className="h-8 w-8 text-primary-500" />
-            <h1 className="text-2xl font-bold">Diff Checker</h1>
+            <div className="flex flex-col">
+              <h1 className="text-2xl font-bold leading-tight">Diff</h1>
+              <span className="text-xs text-gray-500 -mt-1">by Jezz.WTF</span>
+            </div>
           </div>
           <nav className="flex items-center gap-4">
             <NavLink to="/" className={getLinkClass}>
               Home
             </NavLink>
             <NavLink to="/diff-viewer" className={getLinkClass}>
-              Diff Viewer
+              File Parser
             </NavLink>
           </nav>
         </div>
