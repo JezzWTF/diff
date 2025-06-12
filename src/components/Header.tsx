@@ -1,9 +1,19 @@
 import React from 'react';
 import { Sun, Moon, GitCompare as FileCompare } from 'lucide-react';
+import { NavLink } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
 
 const Header: React.FC = () => {
   const { theme, toggleTheme } = useTheme();
+
+  const getLinkClass = ({ isActive }: { isActive: boolean }) =>
+    `px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+      isActive
+        ? 'bg-primary-500 text-white'
+        : theme === 'dark'
+        ? 'text-gray-300 hover:bg-gray-700 hover:text-white'
+        : 'text-gray-600 hover:bg-gray-200 hover:text-black'
+    }`;
 
   return (
     <header className={`
@@ -11,9 +21,19 @@ const Header: React.FC = () => {
       ${theme === 'dark' ? 'bg-gray-800' : 'bg-white'}
     `}>
       <div className="container mx-auto flex justify-between items-center">
-        <div className="flex items-center gap-2">
-          <FileCompare className="h-8 w-8 text-primary-500" />
-          <h1 className="text-2xl font-bold">Diff Checker</h1>
+        <div className="flex items-center gap-8">
+          <div className="flex items-center gap-2">
+            <FileCompare className="h-8 w-8 text-primary-500" />
+            <h1 className="text-2xl font-bold">Diff Checker</h1>
+          </div>
+          <nav className="flex items-center gap-4">
+            <NavLink to="/" className={getLinkClass}>
+              Home
+            </NavLink>
+            <NavLink to="/diff-viewer" className={getLinkClass}>
+              Diff Viewer
+            </NavLink>
+          </nav>
         </div>
         
         <button

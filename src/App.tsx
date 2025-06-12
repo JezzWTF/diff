@@ -1,12 +1,17 @@
 import { ThemeProvider } from './context/ThemeContext';
+import { Routes, Route } from 'react-router-dom';
 import Layout from './components/Layout';
-import DiffChecker from './components/DiffChecker';
+import HomePage from './pages/HomePage';
+import DiffViewerPage from './pages/DiffViewerPage';
 
 function App() {
   return (
     <ThemeProvider>
       <Layout>
-        <DiffChecker />
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/diff-viewer" element={<DiffViewerPage />} />
+        </Routes>
       </Layout>
     </ThemeProvider>
   );
