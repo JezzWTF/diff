@@ -1,6 +1,6 @@
 Suggested Features for Diff Checker
 
-Here are some features that could enhance your diff checker:
+Here are some features that could enhance the diff checker:
 Display & Navigation
 
     Side-by-side view vs. Inline view: Allow users to toggle between these common display modes.
@@ -18,12 +18,6 @@ Comparison & Analysis
     Binary diff: For non-text files, show whether they are different and perhaps some metadata or a hex view.
     Patch file generation/application: Allow users to generate a patch file (e.g., in .diff or .patch format) from the differences, or apply an existing patch file to one of the inputs.
     Different diff algorithms: Offer options like Myers, Patience, or Histogram for different types of content or performance needs.
-
-Output & Integration
-
-    Save/Export diff report: Allow users to save the diff view as HTML, text, or PDF.
-    Copy to clipboard: Easy way to copy specific changed lines or sections.
-    Shareable links: If it's a web-based tool, generate a unique URL for a specific diff session.
 
 User Experience & Customization
 

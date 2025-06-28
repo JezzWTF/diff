@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import type { FileDiff } from '../../types/diff-viewer-types';
 import { HunkDisplay } from './HunkDisplay';
-import { FileIcon, ChevronDownIcon, ChevronUpIcon, PlusCircleIcon, MinusCircleIcon, ArrowPathIcon, DocumentTextIcon } from './Icons';
-import { useTheme } from '../../context/ThemeContext';
+import { ChevronDownIcon, ChevronUpIcon, PlusCircleIcon, MinusCircleIcon, ArrowPathIcon, DocumentTextIcon } from './Icons';
 
 interface FileDiffCardProps {
   fileDiff: FileDiff;
@@ -10,7 +9,6 @@ interface FileDiffCardProps {
 
 export const FileDiffCard: React.FC<FileDiffCardProps> = ({ fileDiff }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const { theme } = useTheme();
 
   let statusText = "Modified";
   let statusColor = "text-yellow-400";
@@ -39,14 +37,14 @@ export const FileDiffCard: React.FC<FileDiffCardProps> = ({ fileDiff }) => {
   const newPathDisplay = fileDiff.isDeletedFile ? '/dev/null' : (fileDiff.newPath.startsWith('b/') ? fileDiff.newPath.substring(2) : fileDiff.newPath);
 
   const renderPath = () => {
-    if (fileDiff.isNewFile) return <span className={theme === 'dark' ? 'text-green-400' : 'text-green-600'}>{newPathDisplay}</span>;
-    if (fileDiff.isDeletedFile) return <span className={theme === 'dark' ? 'text-red-400' : 'text-red-600'}>{oldPathDisplay}</span>;
+    if (fileDiff.isNewFile) return <span className="text-green-600 dark:text-green-400">{newPathDisplay}</span>;
+    if (fileDiff.isDeletedFile) return <span className="text-red-600 dark:text-red-400">{oldPathDisplay}</span>;
     if (fileDiff.isRenamed) return <> 
-      <span className={theme === 'dark' ? 'text-red-400 line-through' : 'text-red-600 line-through'}>{oldPathDisplay}</span> 
-      <span className="text-gray-500 mx-1">&rarr;</span> 
-      <span className={theme === 'dark' ? 'text-green-400' : 'text-green-600'}>{newPathDisplay}</span>
+      <span className="text-red-600 line-through dark:text-red-400">{oldPathDisplay}</span> 
+      <span className="mx-1 text-gray-500">&rarr;</span> 
+      <span className="text-green-600 dark:text-green-400">{newPathDisplay}</span>
     </>;
-    return <span className={theme === 'dark' ? 'text-sky-400' : 'text-sky-600'}>{newPathDisplay}</span>; // Modified
+    return <span className="text-sky-600 dark:text-sky-400">{newPathDisplay}</span>; // Modified
   };
   
   const totalAdditions = fileDiff.hunks.reduce((sum, hunk) => sum + hunk.lines.filter(l => l.type === 'add').length, 0);
@@ -54,15 +52,9 @@ export const FileDiffCard: React.FC<FileDiffCardProps> = ({ fileDiff }) => {
 
 
   return (
-    <div className={`rounded-lg shadow-lg overflow-hidden transition-all duration-300 ease-in-out ${
-      theme === 'dark' ? 'bg-gray-800' : 'bg-white'
-    }`}>
+    <div className="rounded-lg shadow-lg overflow-hidden transition-all duration-300 ease-in-out bg-white dark:bg-gray-800">
       <header 
-        className={`flex items-center justify-between p-3 sm:p-4 cursor-pointer transition-colors ${
-          theme === 'dark' 
-            ? 'bg-gray-700 bg-opacity-50 hover:bg-gray-700' 
-            : 'bg-gray-100 hover:bg-gray-200'
-        }`}
+        className="flex items-center justify-between p-3 sm:p-4 cursor-pointer transition-colors bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:bg-opacity-50 dark:hover:bg-gray-700"
         onClick={() => setIsCollapsed(!isCollapsed)}
       >
         <div className="flex items-center min-w-0">
@@ -75,25 +67,21 @@ export const FileDiffCard: React.FC<FileDiffCardProps> = ({ fileDiff }) => {
         <div className="flex items-center">
             {totalAdditions > 0 && <span className="text-green-400 text-xs sm:text-sm mr-2">+{totalAdditions}</span>}
             {totalDeletions > 0 && <span className="text-red-400 text-xs sm:text-sm mr-3">-{totalDeletions}</span>}
-            {isCollapsed ? <ChevronDownIcon className={`w-5 h-5 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`} /> : <ChevronUpIcon className={`w-5 h-5 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`} />}
+            {isCollapsed ? <ChevronDownIcon className="w-5 h-5 text-gray-500 dark:text-gray-400" /> : <ChevronUpIcon className="w-5 h-5 text-gray-500 dark:text-gray-400" />}
         </div>
       </header>
 
       {!isCollapsed && (
         <div className="p-0 sm:p-1 md:p-2">
           {fileDiff.headerLines && fileDiff.headerLines.length > 0 && (
-            <div className={`px-3 py-2 sm:px-4 sm:py-3 ${
-              theme === 'dark' ? 'bg-gray-900 bg-opacity-30' : 'bg-gray-200'
-            }`}>
+            <div className="px-3 py-2 sm:px-4 sm:py-3 bg-gray-200 dark:bg-gray-900 dark:bg-opacity-30">
               {fileDiff.headerLines.map((line, idx) => (
                 <pre key={`header-${idx}`} className="font-mono text-xs text-gray-500 whitespace-pre-wrap break-all">{line}</pre>
               ))}
             </div>
           )}
           {fileDiff.fileMetaLines && fileDiff.fileMetaLines.length > 0 && (
-             <div className={`px-3 py-2 sm:px-4 sm:py-3 ${
-               theme === 'dark' ? 'bg-gray-800' : 'bg-gray-100'
-             }`}>
+             <div className="px-3 py-2 sm:px-4 sm:py-3 bg-gray-100 dark:bg-gray-800">
               {fileDiff.fileMetaLines.map((line, idx) => (
                  <pre key={`meta-${idx}`} className={`font-mono text-xs whitespace-pre-wrap break-all ${line.startsWith('---') || line.startsWith('+++') ? 'text-gray-400' : 'text-gray-500'}`}>{line}</pre>
               ))}
