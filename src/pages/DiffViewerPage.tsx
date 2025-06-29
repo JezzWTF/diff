@@ -32,9 +32,15 @@ const DiffViewerPage: React.FC = () => {
           if (parsed.length === 0 && text.trim().length > 0) {
             setError("No parsable diff sections found. Ensure the format is a standard unified diff.");
           }
-        } catch (err: any) {
+        } catch (err: unknown) {
           console.error("Diff parsing error:", err);
-          setError(`Error parsing diff: ${err.message || 'Unknown error'}`);
+          let message = 'Unknown error';
+          if (err instanceof Error) {
+            message = err.message;
+          } else if (typeof err === 'string') {
+            message = err;
+          }
+          setError(`Error parsing diff: ${message}`);
           setParsedDiff(null);
         } finally {
           setIsLoading(false);
@@ -116,9 +122,15 @@ const DiffViewerPage: React.FC = () => {
         if (parsed.length === 0 && diffText.trim().length > 0) {
           setError("No parsable diff sections found. Ensure the format is a standard unified diff.");
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error("Diff parsing error:", err);
-        setError(`Error parsing diff: ${err.message || 'Unknown error'}`);
+        let message = 'Unknown error';
+        if (err instanceof Error) {
+          message = err.message;
+        } else if (typeof err === 'string') {
+          message = err;
+        }
+        setError(`Error parsing diff: ${message}`);
         setParsedDiff(null);
       } finally {
         setIsLoading(false);

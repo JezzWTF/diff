@@ -12,6 +12,20 @@ const ResultSection: React.FC<ResultSectionProps> = ({ diffResult }) => {
   const parentRef = useRef<HTMLDivElement>(null);
   const [showScrollTop, setShowScrollTop] = useState(false);
   
+  const linesWithLineNumbers = React.useMemo(() => {
+    let leftLineNumber = 1;
+    let rightLineNumber = 1;
+    return diffResult.lines.map((line) => {
+      const currentLeftNumber = line.left ? leftLineNumber++ : null;
+      const currentRightNumber = line.right ? rightLineNumber++ : null;
+      return {
+        ...line,
+        leftLineNumber: currentLeftNumber,
+        rightLineNumber: currentRightNumber,
+      };
+    });
+  }, [diffResult.lines]);
+
   const getDiffTypeClass = (type: DiffType): string => {
     if (type === 'added') {
       return theme === 'dark' ? 'bg-green-900/50' : 'bg-green-100';
@@ -22,9 +36,6 @@ const ResultSection: React.FC<ResultSectionProps> = ({ diffResult }) => {
     }
     return '';
   };
-
-  let leftLineCount = 1;
-  let rightLineCount = 1;
 
   const rowVirtualizer = useVirtualizer({
     count: diffResult.lines.length,
@@ -101,10 +112,7 @@ const ResultSection: React.FC<ResultSectionProps> = ({ diffResult }) => {
             }}
           >
             {rowVirtualizer.getVirtualItems().map((virtualRow) => {
-              const line = diffResult.lines[virtualRow.index];
-              // Reset line counters for each virtual row to ensure correct numbering
-              const leftNum = line.left ? leftLineCount++ : null;
-              const rightNum = line.right ? rightLineCount++ : null;
+              const line = linesWithLineNumbers[virtualRow.index];
               
               return (
                 <div
@@ -124,13 +132,13 @@ const ResultSection: React.FC<ResultSectionProps> = ({ diffResult }) => {
                     line={line.left} 
                     side="left" 
                     getDiffTypeClass={getDiffTypeClass}
-                    lineNumber={leftNum}
+                    lineNumber={line.leftLineNumber}
                   />
                   <RenderDiffLine 
                     line={line.right} 
                     side="right" 
                     getDiffTypeClass={getDiffTypeClass}
-                    lineNumber={rightNum}
+                    lineNumber={line.rightLineNumber}
                   />
                 </div>
               );

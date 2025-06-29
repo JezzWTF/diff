@@ -104,7 +104,7 @@ Most diff tools are utilitarian and boring. This one isn't. With a focus on **vi
 
 ```bash
 # Clone it
-git clone https://github.com/yourusername/diff.git
+git clone https://github.com/jezzWTF/diff.git
 
 # Enter the directory
 cd diff

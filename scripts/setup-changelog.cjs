@@ -68,8 +68,14 @@ class ChangelogSetup {
 
         // Backup existing file
         const backupName = `${existingFile}.backup.${Date.now()}`;
-        fs.copyFileSync(existingFile, backupName);
-        console.log(`📋 Backed up existing file to: ${backupName}`);
+        try {
+          fs.copyFileSync(existingFile, backupName);
+          console.log(`📋 Backed up existing file to: ${backupName}`);
+        } catch (backupError) {
+          console.error(`❌ Error backing up the existing file: ${backupError.message}`);
+          console.log('Aborting setup to prevent data loss.');
+          return;
+        }
       }
 
       // Gather project information
