@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { Upload, Play, RotateCcw } from 'lucide-react';
+import { Upload, Play, RotateCcw, Loader2 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import TextArea from './TextArea';
 
@@ -114,13 +114,17 @@ const InputSection: React.FC<InputSectionProps> = ({
           <button
             className={`
               flex items-center gap-2 px-6 py-2 rounded-lg font-medium transition-all
-              ${loading ? 'opacity-60 cursor-not-allowed' : 'hover:shadow-lg active:scale-95'}
-              bg-primary-500 hover:bg-primary-600 text-white
+              ${loading ? 'opacity-90 cursor-not-allowed' : 'hover:shadow-lg active:scale-95'}
+              bg-sky-600 hover:bg-sky-700 text-white
             `}
             onClick={onCompare}
             disabled={loading || !leftText || !rightText}
           >
-            <Play size={16} />
+            {loading ? (
+              <Loader2 size={16} className="animate-spin" />
+            ) : (
+              <Play size={16} />
+            )}
             <span>{loading ? 'Processing...' : 'Compare'}</span>
           </button>
           <button
@@ -129,6 +133,7 @@ const InputSection: React.FC<InputSectionProps> = ({
               ${theme === 'dark' ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-200 hover:bg-gray-300'}
             `}
             onClick={onReset}
+            disabled={loading}
           >
             <RotateCcw size={16} />
             <span>Reset</span>

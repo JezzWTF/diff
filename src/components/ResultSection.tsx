@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { useTheme } from '../context/ThemeContext';
 import { DiffResult, DiffLine, DiffType } from '../utils/diffUtils';
+import { useVirtualizer } from '@tanstack/react-virtual';
 
 interface ResultSectionProps {
   diffResult: DiffResult;
@@ -8,6 +9,8 @@ interface ResultSectionProps {
 
 const ResultSection: React.FC<ResultSectionProps> = ({ diffResult }) => {
   const { theme } = useTheme();
+  const parentRef = useRef<HTMLDivElement>(null);
+  const [showScrollTop, setShowScrollTop] = useState(false);
   
   const getDiffTypeClass = (type: DiffType): string => {
     if (type === 'added') {
@@ -23,8 +26,43 @@ const ResultSection: React.FC<ResultSectionProps> = ({ diffResult }) => {
   let leftLineCount = 1;
   let rightLineCount = 1;
 
+  const rowVirtualizer = useVirtualizer({
+    count: diffResult.lines.length,
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => 28, // Increased height to accommodate wrapped text
+    overscan: 10, // Render 10 items over and under the visible area
+    measureElement: (element) => {
+      // Dynamically measure the actual height of each row
+      return element.getBoundingClientRect().height;
+    },
+  });
+
+  // Handle scroll event to show/hide scroll-to-top button
+  useEffect(() => {
+    const scrollContainer = parentRef.current;
+    if (!scrollContainer) return;
+
+    const handleScroll = () => {
+      setShowScrollTop(scrollContainer.scrollTop > 300);
+    };
+
+    scrollContainer.addEventListener('scroll', handleScroll);
+    return () => {
+      scrollContainer.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
+
+  const scrollToTop = () => {
+    if (parentRef.current) {
+      parentRef.current.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
+    }
+  };
+
   return (
-    <div className="w-full mt-4">
+    <div className="w-full mt-4 relative">
       <h2 className="text-xl font-bold mb-4">Diff Result</h2>
       
       <div className={`
@@ -46,24 +84,78 @@ const ResultSection: React.FC<ResultSectionProps> = ({ diffResult }) => {
           </div>
         </div>
         
-        <div className="overflow-auto max-h-[600px]">
-          {diffResult.lines.map((line, index) => (
-            <div key={index} className="flex">
-              <RenderDiffLine 
-                line={line.left} 
-                side="left" 
-                getDiffTypeClass={getDiffTypeClass}
-                lineNumber={line.left ? leftLineCount++ : null}
-              />
-              <RenderDiffLine 
-                line={line.right} 
-                side="right" 
-                getDiffTypeClass={getDiffTypeClass}
-                lineNumber={line.right ? rightLineCount++ : null}
-              />
-            </div>
-          ))}
+        <div 
+          ref={parentRef}
+          className="overflow-auto"
+          style={{
+            height: `${Math.min(diffResult.lines.length * 28, 600)}px`, // Set a max height
+            contain: 'content',
+            maxWidth: '100%',
+          }}
+        >
+          <div
+            style={{
+              height: `${rowVirtualizer.getTotalSize()}px`,
+              width: '100%',
+              position: 'relative',
+            }}
+          >
+            {rowVirtualizer.getVirtualItems().map((virtualRow) => {
+              const line = diffResult.lines[virtualRow.index];
+              // Reset line counters for each virtual row to ensure correct numbering
+              const leftNum = line.left ? leftLineCount++ : null;
+              const rightNum = line.right ? rightLineCount++ : null;
+              
+              return (
+                <div
+                  key={virtualRow.key}
+                  data-index={virtualRow.index}
+                  ref={rowVirtualizer.measureElement}
+                  style={{
+                    position: 'absolute',
+                    top: `${virtualRow.start}px`,
+                    left: 0,
+                    width: '100%',
+                    minHeight: `${virtualRow.size}px`,
+                  }}
+                  className="flex w-full"
+                >
+                  <RenderDiffLine 
+                    line={line.left} 
+                    side="left" 
+                    getDiffTypeClass={getDiffTypeClass}
+                    lineNumber={leftNum}
+                  />
+                  <RenderDiffLine 
+                    line={line.right} 
+                    side="right" 
+                    getDiffTypeClass={getDiffTypeClass}
+                    lineNumber={rightNum}
+                  />
+                </div>
+              );
+            })}
+          </div>
         </div>
+
+        {/* Scroll to top button */}
+        {showScrollTop && (
+          <button
+            onClick={scrollToTop}
+            className={`
+              absolute bottom-4 right-4 p-2 rounded-full shadow-md transition-opacity duration-200
+              ${theme === 'dark' 
+                ? 'bg-gray-700 hover:bg-gray-600 text-white' 
+                : 'bg-white hover:bg-gray-100 text-gray-800'}
+              focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500
+            `}
+            aria-label="Scroll to top"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z" clipRule="evenodd" />
+            </svg>
+          </button>
+        )}
       </div>
       
       <div className="flex gap-6 mt-4 justify-center">
@@ -165,7 +257,7 @@ const RenderDiffLine: React.FC<RenderDiffLineProps> = ({ line, side, getDiffType
         {lineNumber || '\u00A0'}
       </div>
       <div className={`
-        flex-1 p-2 font-mono text-sm whitespace-pre-wrap
+        flex-1 p-2 font-mono text-sm whitespace-pre-wrap break-all
         ${line ? getDiffTypeClass(line.type) : ''}
         ${!line && (theme === 'dark' ? 'bg-gray-800/50' : 'bg-gray-50')}
       `}>

@@ -1,17 +1,24 @@
 {
-  "name": "diffchecker",
+  "name": "jezzwtf-diffract",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.1.1",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "changelog:add": "node scripts/update-changelog.cjs",
+    "changelog:setup": "node scripts/setup-changelog.cjs",
+    "build:patch": "pnpm version patch --no-git-tag-version && pnpm build && node scripts/write-version.cjs",
+    "build:minor": "pnpm version minor --no-git-tag-version && pnpm build && node scripts/write-version.cjs",
+    "build:major": "pnpm version major --no-git-tag-version && pnpm build && node scripts/write-version.cjs",
+    "build:noincr": "pnpm build && node scripts/write-version.cjs"
   },
   "dependencies": {
     "@tanstack/react-virtual": "^3.13.12",
     "@types/react-router-dom": "^5.3.3",
+    "diff": "^8.0.2",
     "lucide-react": "^0.344.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
@@ -19,6 +26,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.9.1",
+    "@types/diff": "^8.0.0",
     "@types/react": "^18.3.5",
     "@types/react-dom": "^18.3.0",
     "@vitejs/plugin-react": "^4.3.1",

@@ -3,34 +3,81 @@
 @tailwind utilities;
 
 :root {
-  --color-primary-50: #eef5ff;
-  --color-primary-100: #d9e8ff;
-  --color-primary-200: #bcd5ff;
-  --color-primary-300: #91b8ff;
-  --color-primary-400: #6595ff;
-  --color-primary-500: #4285F4;
-  --color-primary-600: #2563eb;
-  --color-primary-700: #1d58d8;
-  --color-primary-800: #1e40af;
-  --color-primary-900: #1e3a8a;
-  --color-primary-950: #172554;
+  --color-primary-50: #f5f9ec;
+  --color-primary-100: #eaf3da;
+  --color-primary-200: #e0edc7;
+  --color-primary-300: #d6e7b5;
+  --color-primary-400: #cce2a3;
+  --color-primary-500: #abcf67;
+  --color-primary-600: #86b138;
+  --color-primary-700: #5a7625;
+  --color-primary-800: #2d3b13;
+  --color-primary-900: #171f09;
+  --color-primary-950: #0b0f05;
   
-  --color-accent-50: #faf5ff;
-  --color-accent-100: #f3e8ff;
-  --color-accent-200: #e9d5ff;
-  --color-accent-300: #d8b4fe;
-  --color-accent-400: #c084fc;
-  --color-accent-500: #a855f7;
-  --color-accent-600: #9333ea;
-  --color-accent-700: #8e44ad;
-  --color-accent-800: #6b21a8;
-  --color-accent-900: #581c87;
-  --color-accent-950: #3b0764;
+  /* Cinnabar - replacing accent */
+  --color-accent-50: #fbdbd7;
+  --color-accent-100: #f6b8ae;
+  --color-accent-200: #f29486;
+  --color-accent-300: #ed715d;
+  --color-accent-400: #e94f37;
+  --color-accent-500: #ce2f17;
+  --color-accent-600: #9a2311;
+  --color-accent-700: #67180b;
+  --color-accent-800: #330c06;
+  --color-accent-900: #1a0603;
+  --color-accent-950: #0d0301;
+
+  /* Burnt Sienna - new color */
+  --color-sienna-50: #fbe3dd;
+  --color-sienna-100: #f7c6bb;
+  --color-sienna-200: #f4aa99;
+  --color-sienna-300: #f08d77;
+  --color-sienna-400: #ec7357;
+  --color-sienna-500: #e6401b;
+  --color-sienna-600: #ae3013;
+  --color-sienna-700: #74200d;
+  --color-sienna-800: #3a1006;
+  --color-sienna-900: #1d0803;
+  --color-sienna-950: #0e0402;
+
+  /* English Violet */
+  --color-violet-50: #e1d9e4;
+  --color-violet-100: #c3b4ca;
+  --color-violet-200: #a58eaf;
+  --color-violet-300: #866994;
+  --color-violet-400: #654f6f;
+  --color-violet-500: #503f58;
+  --color-violet-600: #3c2f42;
+  --color-violet-700: #281f2c;
+  --color-violet-800: #141016;
+  --color-violet-900: #0a080b;
+  --color-violet-950: #050405;
+
+  /* Ultra Violet */
+  --color-ultra-50: #dedee9;
+  --color-ultra-100: #bcbdd3;
+  --color-ultra-200: #9b9cbe;
+  --color-ultra-300: #7a7aa8;
+  --color-ultra-400: #5c5d8d;
+  --color-ultra-500: #4a4b72;
+  --color-ultra-600: #383855;
+  --color-ultra-700: #252539;
+  --color-ultra-800: #13131c;
+  --color-ultra-900: #09090e;
+  --color-ultra-950: #050507;
+
+  /* Suggested Diff Colors for Light Mode */
+  --diff-add-bg: #e6ffed;
+  --diff-add-text: #1f7a2c;
+  --diff-del-bg: #ffeef0;
+  --diff-del-text: #c93c37;
+  --diff-hunk-bg: #f0f6fc;
 }
 
 @layer base {
   body {
-    @apply antialiased;
+    @apply bg-neutral-50 text-neutral-800 dark:bg-gray-900 dark:text-gray-100 antialiased;
   }
 }
 

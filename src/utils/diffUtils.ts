@@ -1,3 +1,5 @@
+import * as diffLib from 'diff';
+
 export type DiffType = 'added' | 'removed' | 'unchanged' | 'modified';
 
 export interface DiffLine {
@@ -27,52 +29,72 @@ export function computeDiff(leftText: string, rightText: string): DiffResult {
   const leftLines = leftText.split('\n');
   const rightLines = rightText.split('\n');
   
-  const lcs = computeLCSMatrix(leftLines, rightLines);
+  // Use the diff library to compute line-level differences
+  const diffResult = diffLib.diffLines(leftText, rightText);
+  
   const diffPairs: DiffPair[] = [];
   let additions = 0;
   let deletions = 0;
   let modifications = 0;
   
-  let i = leftLines.length;
-  let j = rightLines.length;
+  let leftIndex = 0;
+  let rightIndex = 0;
   
-  while (i > 0 || j > 0) {
-    if (i > 0 && j > 0 && leftLines[i - 1] === rightLines[j - 1]) {
-      diffPairs.unshift({
-        left: { content: leftLines[i - 1], type: 'unchanged' },
-        right: { content: rightLines[j - 1], type: 'unchanged' }
-      });
-      i--;
-      j--;
-    } else if (j > 0 && (i === 0 || lcs[i][j - 1] >= lcs[i - 1][j])) {
-      additions++;
-      diffPairs.unshift({
-        left: null,
-        right: { content: rightLines[j - 1], type: 'added' }
-      });
-      j--;
-    } else if (i > 0 && (j === 0 || lcs[i][j - 1] < lcs[i - 1][j])) {
-      deletions++;
-      diffPairs.unshift({
-        left: { content: leftLines[i - 1], type: 'removed' },
-        right: null
-      });
-      i--;
+  // Process the diff result and convert to our DiffPair format
+  for (const part of diffResult) {
+    const lines = part.value.split('\n');
+    // Remove empty line at the end if the last character was a newline
+    if (lines.length > 0 && part.value.endsWith('\n')) {
+      lines.pop();
+    }
+    
+    if (part.added) {
+      // Added lines
+      additions += lines.length;
+      for (const line of lines) {
+        diffPairs.push({
+          left: null,
+          right: { content: line, type: 'added' }
+        });
+        rightIndex++;
+      }
+    } else if (part.removed) {
+      // Removed lines
+      deletions += lines.length;
+      for (const line of lines) {
+        diffPairs.push({
+          left: { content: line, type: 'removed' },
+          right: null
+        });
+        leftIndex++;
+      }
+    } else {
+      // Unchanged lines
+      for (const line of lines) {
+        diffPairs.push({
+          left: { content: line, type: 'unchanged' },
+          right: { content: line, type: 'unchanged' }
+        });
+        leftIndex++;
+        rightIndex++;
+      }
     }
   }
   
+  // Process potential modifications (adjacent removed and added lines)
   const processedDiffPairs: DiffPair[] = [];
   
   for (let i = 0; i < diffPairs.length; i++) {
     const current = diffPairs[i];
     
-    if (current.left?.type === 'removed' && diffPairs[i + 1]?.right?.type === 'added') {
+    if (current.left?.type === 'removed' && i + 1 < diffPairs.length && diffPairs[i + 1]?.right?.type === 'added') {
       const similarity = calculateSimilarity(
         current.left.content,
         diffPairs[i + 1].right!.content
       );
       
       if (similarity > 0.5) {
+        // These lines are similar enough to be considered a modification
         modifications++;
         deletions--;
         additions--;
@@ -95,7 +117,7 @@ export function computeDiff(leftText: string, rightText: string): DiffResult {
           }
         });
         
-        i++;
+        i++; // Skip the next pair since we've processed it
       } else {
         processedDiffPairs.push(current);
       }
@@ -118,91 +140,56 @@ function findCharacterChanges(oldStr: string, newStr: string): {
   left: { start: number; end: number; }[];
   right: { start: number; end: number; }[];
 } {
-  const changes = {
+  // Use the diff library for character-level diffs
+  const changes = diffLib.diffChars(oldStr, newStr);
+  
+  const result = {
     left: [] as { start: number; end: number; }[],
     right: [] as { start: number; end: number; }[]
   };
   
-  let start = 0;
-  while (start < oldStr.length && start < newStr.length && oldStr[start] === newStr[start]) {
-    start++;
-  }
+  let leftPos = 0;
+  let rightPos = 0;
   
-  let end = 0;
-  while (
-    end < oldStr.length - start &&
-    end < newStr.length - start &&
-    oldStr[oldStr.length - 1 - end] === newStr[newStr.length - 1 - end]
-  ) {
-    end++;
-  }
-  
-  if (start < oldStr.length - end) {
-    changes.left.push({
-      start,
-      end: oldStr.length - end
-    });
-  }
-  
-  if (start < newStr.length - end) {
-    changes.right.push({
-      start,
-      end: newStr.length - end
-    });
-  }
-  
-  return changes;
-}
-
-function computeLCSMatrix(leftLines: string[], rightLines: string[]): number[][] {
-  const matrix: number[][] = Array(leftLines.length + 1)
-    .fill(null)
-    .map(() => Array(rightLines.length + 1).fill(0));
-  
-  for (let i = 1; i <= leftLines.length; i++) {
-    for (let j = 1; j <= rightLines.length; j++) {
-      if (leftLines[i - 1] === rightLines[j - 1]) {
-        matrix[i][j] = matrix[i - 1][j - 1] + 1;
-      } else {
-        matrix[i][j] = Math.max(matrix[i - 1][j], matrix[i][j - 1]);
-      }
+  for (const part of changes) {
+    if (part.added) {
+      // Added content in the right string
+      result.right.push({
+        start: rightPos,
+        end: rightPos + part.value.length
+      });
+      rightPos += part.value.length;
+    } else if (part.removed) {
+      // Removed content from the left string
+      result.left.push({
+        start: leftPos,
+        end: leftPos + part.value.length
+      });
+      leftPos += part.value.length;
+    } else {
+      // Unchanged content
+      leftPos += part.value.length;
+      rightPos += part.value.length;
     }
   }
   
-  return matrix;
+  return result;
 }
 
 function calculateSimilarity(a: string, b: string): number {
   if (a === b) return 1;
   if (a.length === 0 || b.length === 0) return 0;
   
-  const distance = levenshteinDistance(a, b);
-  const maxLength = Math.max(a.length, b.length);
+  // Use the diff library to calculate similarity
+  const changes = diffLib.diffChars(a, b);
   
-  return 1 - distance / maxLength;
-}
-
-function levenshteinDistance(a: string, b: string): number {
-  const matrix: number[][] = [];
-  
-  for (let i = 0; i <= a.length; i++) {
-    matrix[i] = [i];
-  }
-  
-  for (let j = 0; j <= b.length; j++) {
-    matrix[0][j] = j;
-  }
-  
-  for (let i = 1; i <= a.length; i++) {
-    for (let j = 1; j <= b.length; j++) {
-      const cost = a[i - 1] === b[j - 1] ? 0 : 1;
-      matrix[i][j] = Math.min(
-        matrix[i - 1][j] + 1,
-        matrix[i][j - 1] + 1,
-        matrix[i - 1][j - 1] + cost
-      );
+  let changeLengthSum = 0;
+  for (const part of changes) {
+    if (part.added || part.removed) {
+      changeLengthSum += part.value.length;
     }
   }
   
-  return matrix[a.length][b.length];
+  const maxLength = Math.max(a.length, b.length);
+  return 1 - changeLengthSum / (2 * maxLength);
 }

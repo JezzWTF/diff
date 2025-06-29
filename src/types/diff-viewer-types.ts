@@ -27,6 +27,12 @@ export interface FileDiff {
   hunks: DiffHunk[];
   headerLines: string[]; // Git diff header lines before '---' (e.g., diff --git, index, mode changes)
   fileMetaLines: string[]; // Lines between '---'/'+++' and the first hunk (e.g. similarity index, rename from/to)
+  // New properties for enhanced features
+  isLargeFile?: boolean; // Whether this file has too many changes to show by default
+  isMarkdown?: boolean; // Whether this is a markdown file
+  totalChanges?: number; // Total number of lines changed (additions + deletions)
 }
 
 export type ParsedDiff = FileDiff[];
+
+export type MarkdownViewMode = 'diff' | 'rich';

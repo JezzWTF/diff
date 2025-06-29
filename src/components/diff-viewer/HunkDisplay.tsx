@@ -2,6 +2,7 @@ import React, { useRef } from 'react';
 import type { DiffHunk } from '../../types/diff-viewer-types';
 import { MemoizedLineDisplay } from './LineDisplay';
 import { useVirtualizer } from '@tanstack/react-virtual';
+import { useTheme } from '../../context/ThemeContext';
 
 interface HunkDisplayProps {
   hunk: DiffHunk;
@@ -9,6 +10,7 @@ interface HunkDisplayProps {
 
 export const HunkDisplay: React.FC<HunkDisplayProps> = ({ hunk }) => {
   const parentRef = useRef<HTMLDivElement>(null);
+  const { theme } = useTheme();
 
   const rowVirtualizer = useVirtualizer({
     count: hunk.lines.length,
@@ -19,12 +21,12 @@ export const HunkDisplay: React.FC<HunkDisplayProps> = ({ hunk }) => {
 
   return (
     <div className="my-2 sm:my-3">
-      <div className="p-1.5 sm:p-2 px-3 sm:px-4 font-mono text-xs sm:text-sm select-none sticky top-0 z-10 bg-gray-200 text-blue-600 dark:bg-gray-700 dark:text-cyan-400">
+      <div className={`p-1.5 sm:p-2 px-3 sm:px-4 font-mono text-xs sm:text-sm select-none sticky top-0 z-10 bg-diff-hunk-bg ${theme === 'dark' ? 'text-blue-600 dark:bg-gray-700 dark:text-cyan-400' : 'text-ultra-500'}`}>
         {hunk.header}
       </div>
       <div 
         ref={parentRef} 
-        className="bg-gray-50 dark:bg-gray-800 dark:bg-opacity-50 overflow-y-auto"
+        className="bg-white dark:bg-gray-800 dark:bg-opacity-50 overflow-y-auto"
         style={{
           height: `${Math.min(hunk.lines.length * 22, 500)}px`, // Set a max height
           contain: 'strict',
@@ -42,12 +44,13 @@ export const HunkDisplay: React.FC<HunkDisplayProps> = ({ hunk }) => {
             return (
               <div
                 key={virtualItem.key}
+                data-index={virtualItem.index}
                 style={{
                   position: 'absolute',
-                  top: 0,
+                  top: `${virtualItem.start}px`,
                   left: 0,
                   width: '100%',
-                  transform: `translateY(${virtualItem.start}px)`,
+                  height: `${virtualItem.size}px`,
                 }}
               >
                 <MemoizedLineDisplay line={line} />
