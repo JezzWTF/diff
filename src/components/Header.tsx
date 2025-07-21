@@ -1,7 +1,7 @@
 import React from 'react';
 import { Sun, Moon, GitCompareArrows as FileCompare } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
-import { useTheme } from '../context/ThemeContext';
+import { useTheme } from '../context/useTheme';
 
 const Header: React.FC = () => {
   const { theme, toggleTheme } = useTheme();

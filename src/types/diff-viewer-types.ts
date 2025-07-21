@@ -35,4 +35,6 @@ export interface FileDiff {
 
 export type ParsedDiff = FileDiff[];
 
+export type ViewMode = 'split' | 'inline' | 'compact';
+
 export type MarkdownViewMode = 'diff' | 'rich';

@@ -3,7 +3,7 @@ import { parseDiff } from '../services/diffParser';
 import type { ParsedDiff } from '../types/diff-viewer-types';
 import { DiffDisplay } from '../components/diff-viewer/DiffDisplay';
 import { UploadIcon, CogIcon, ExclamationTriangleIcon } from '../components/diff-viewer/Icons';
-import { useTheme } from '../context/ThemeContext';
+import { useTheme } from '../context/useTheme';
 
 const DiffViewerPage: React.FC = () => {
   const { theme } = useTheme();

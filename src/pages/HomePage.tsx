@@ -1,3 +1,4 @@
+import React from 'react';
 import DiffChecker from '../components/DiffChecker';
 
 const HomePage = () => {

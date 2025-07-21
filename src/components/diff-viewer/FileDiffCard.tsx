@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import type { FileDiff } from '../../types/diff-viewer-types';
 import { HunkDisplay } from './HunkDisplay';
 import { ChevronDownIcon, ChevronUpIcon, PlusCircleIcon, MinusCircleIcon, ArrowPathIcon, DocumentTextIcon } from './Icons';
-import { useTheme } from '../../context/ThemeContext';
+import { useTheme } from '../../context/useTheme';
 
 interface FileDiffCardProps {
   fileDiff: FileDiff;
@@ -10,7 +10,9 @@ interface FileDiffCardProps {
 
 export const FileDiffCard: React.FC<FileDiffCardProps> = ({ fileDiff }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [showScrollTop, setShowScrollTop] = useState(false);
   const { theme } = useTheme();
+  const cardRef = useRef<HTMLDivElement>(null);
   
   let statusText = "Modified";
   let statusColor = theme === 'dark' ? "text-primary-500" : "text-ultra-violet";
@@ -63,9 +65,87 @@ export const FileDiffCard: React.FC<FileDiffCardProps> = ({ fileDiff }) => {
   const totalAdditions = fileDiff.hunks.reduce((sum, hunk) => sum + hunk.lines.filter(l => l.type === 'add').length, 0);
   const totalDeletions = fileDiff.hunks.reduce((sum, hunk) => sum + hunk.lines.filter(l => l.type === 'delete').length, 0);
 
+  useEffect(() => {
+    // Hide button and reset state when collapsed
+    if (isCollapsed) {
+      setShowScrollTop(false);
+      return;
+    }
+
+    const checkScrollableContent = () => {
+      if (!cardRef.current || isCollapsed) {
+        setShowScrollTop(false);
+        return;
+      }
+      
+      // Find all scrollable hunk containers within this card
+      const scrollableContainers = cardRef.current.querySelectorAll('[data-hunk-scroll]');
+      
+      let hasScrolled = false;
+      scrollableContainers.forEach((container) => {
+        const element = container as HTMLElement;
+        if (element.scrollTop > 50) { // Show button when scrolled down 50px in any hunk
+          hasScrolled = true;
+        }
+      });
+      
+      setShowScrollTop(hasScrolled);
+    };
+
+    const addScrollListeners = () => {
+      if (!cardRef.current || isCollapsed) return;
+      
+      const scrollableContainers = cardRef.current.querySelectorAll('[data-hunk-scroll]');
+      scrollableContainers.forEach((container) => {
+        container.addEventListener('scroll', checkScrollableContent);
+      });
+    };
+
+    const removeScrollListeners = () => {
+      if (!cardRef.current) return;
+      
+      const scrollableContainers = cardRef.current.querySelectorAll('[data-hunk-scroll]');
+      scrollableContainers.forEach((container) => {
+        container.removeEventListener('scroll', checkScrollableContent);
+      });
+    };
+
+    // Add listeners when component mounts and when content changes
+    const timeoutId = setTimeout(() => {
+      addScrollListeners();
+      // Check initial scroll state when expanding
+      checkScrollableContent();
+    }, 100); // Small delay to ensure DOM is ready
+
+    return () => {
+      clearTimeout(timeoutId);
+      removeScrollListeners();
+    };
+  }, [isCollapsed]); // Re-run when collapse state changes
+
+  const scrollToCardTop = () => {
+    if (!cardRef.current) return;
+    
+    // Scroll all hunk containers back to top
+    const scrollableContainers = cardRef.current.querySelectorAll('[data-hunk-scroll]');
+    scrollableContainers.forEach((container) => {
+      const element = container as HTMLElement;
+      element.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
+    });
+    
+    // Also scroll the card into view
+    cardRef.current.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start'
+    });
+  };
+
 
   return (
-    <div className="rounded-lg shadow-lg overflow-hidden transition-all duration-300 ease-in-out bg-white dark:bg-gray-800">
+    <div ref={cardRef} className="rounded-lg shadow-lg overflow-hidden transition-all duration-300 ease-in-out bg-white dark:bg-gray-800 relative">
       <header 
         className={`flex items-center justify-between p-3 sm:p-4 cursor-pointer transition-colors ${
           theme === 'dark' 
@@ -119,6 +199,24 @@ export const FileDiffCard: React.FC<FileDiffCardProps> = ({ fileDiff }) => {
             </div>
           )}
         </div>
+      )}
+      
+      {/* Return to top button for this file block */}
+      {showScrollTop && !isCollapsed && (
+        <button
+          onClick={scrollToCardTop}
+          className={`absolute bottom-4 right-4 p-2 rounded-full shadow-md transition-all duration-300 z-10 ${
+            theme === 'dark' 
+              ? 'bg-gray-600 hover:bg-gray-500 text-white' 
+              : 'bg-white hover:bg-gray-50 text-gray-700'
+          } border ${
+            theme === 'dark' ? 'border-gray-500' : 'border-gray-300'
+          }`}
+          aria-label={`Scroll to top of ${fileDiff.newPath}`}
+          title={`Back to top of ${fileDiff.newPath}`}
+        >
+          <ChevronUpIcon className="h-4 w-4" />
+        </button>
       )}
     </div>
   );

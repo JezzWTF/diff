@@ -1,24 +1,11 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+// ...Theme type is now imported from ThemeContextObject.tsx...
+import React, { useState, useEffect } from 'react';
+import { ThemeContext, Theme as ThemeType } from './ThemeContextObject';
 
-type Theme = 'dark' | 'light';
-
-interface ThemeContextType {
-  theme: Theme;
-  toggleTheme: () => void;
-}
-
-const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
-
-export const useTheme = () => {
-  const context = useContext(ThemeContext);
-  if (context === undefined) {
-    throw new Error('useTheme must be used within a ThemeProvider');
-  }
-  return context;
-};
+// ...ThemeContext, Theme, ThemeContextType imported from ThemeContextObject.tsx...
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [theme, setTheme] = useState<Theme>(() => {
+  const [theme, setTheme] = useState<ThemeType>(() => {
     // Check for stored preference or use system preference
     const savedTheme = localStorage.getItem('theme');
     if (savedTheme === 'light' || savedTheme === 'dark') {
