@@ -128,3 +128,8 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+
+# User-added files
+# Add any user-specific files or directories here that should not be ignored by git.
+
+.docs/
