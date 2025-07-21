@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 ### Added
-- Initial release of Diffract - A modern web-based diff checker and viewer
+- Initial release of diff:ract - A modern web-based diff checker and viewer
 - Text diff comparison functionality with side-by-side and unified views
 - File diff parsing and visualization
 - Dark/light theme support
