@@ -16,6 +16,7 @@
     "build:noincr": "pnpm build && node scripts/write-version.cjs"
   },
   "dependencies": {
+    "@fontsource/inter": "^5.2.6",
     "@tanstack/react-virtual": "^3.13.12",
     "diff": "^8.0.2",
     "lucide-react": "^0.344.0",
